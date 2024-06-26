@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:weather_app/application/future_weather/future_weather_bloc.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -9,15 +11,32 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   @override
+  void initState() {
+    super.initState();
+    BlocProvider.of<FutureWeatherBloc>(context).add(GetFutureWeatherEvent());
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white70,
       appBar: AppBar(
         backgroundColor: Colors.white70,
         leading: const Icon(Icons.menu),
-        actions: const [
-          Text('San Diego, USA'),
-          Icon(Icons.keyboard_arrow_down)
+        actions: [
+          BlocBuilder<FutureWeatherBloc, FutureWeatherState>(
+            buildWhen: (context, state) {
+              return state is FutureWeatherLoadedState;
+            },
+            builder: (context, state) {
+              if (state is FutureWeatherLoadedState) {
+                return Text(
+                    "${state.data.location!.name!},${state.data.location!.country!}");
+              }
+              return const CircularProgressIndicator();
+            },
+          ),
+          const Icon(Icons.keyboard_arrow_down)
         ],
       ),
       body: SingleChildScrollView(
@@ -26,70 +45,90 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Column(
             children: [
               const SizedBox(height: 16),
-              Container(
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16)),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Column(
-                    children: [
-                      const Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '17',
-                            style: TextStyle(fontSize: 46, color: Colors.blue),
-                          ),
-                          Icon(Icons.cloud_done)
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      const Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Clear'),
-                              Text('Feels like 15'),
-                            ],
-                          ),
-                          Text('Max 20, Min 10')
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        width: double.infinity,
-                        height: 2,
-                        decoration: const BoxDecoration(color: Colors.grey),
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        height: 90,
-                        child: ListView.builder(
-                          itemCount: 20,
-                          scrollDirection: Axis.horizontal,
-                          itemBuilder: (context, index) {
-                            return const Padding(
-                              padding: EdgeInsets.only(right: 16.0),
-                              child: Column(
-                                children: [
-                                  Text('+15'),
-                                  SizedBox(height: 8),
-                                  Icon(Icons.cloud_done),
-                                  SizedBox(height: 8),
-                                  Text('Now'),
-                                  SizedBox(height: 8),
-                                ],
+              BlocBuilder<FutureWeatherBloc, FutureWeatherState>(
+                builder: (context, state) {
+                  if (state is FutureWeatherLoadingErrorState) {
+                    return Center(
+                      child: Text(state.msg),
+                    );
+                  }
+                  if (state is FutureWeatherLoadedState) {
+                    return Container(
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16)),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "${state.data.current!.tempC}",
+                                  style: const TextStyle(
+                                      fontSize: 46, color: Colors.blue),
+                                ),
+                                const Icon(Icons.cloud_done)
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(state.data.current!.condition!.text!),
+                                    Text(
+                                        'Feels like ${state.data.current!.feelslikeC}'),
+                                  ],
+                                ),
+                                //  Text('Max 20, Min 10')
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              width: double.infinity,
+                              height: 2,
+                              decoration:
+                                  const BoxDecoration(color: Colors.grey),
+                            ),
+                            const SizedBox(height: 8),
+                            SizedBox(
+                              height: 90,
+                              child: ListView.builder(
+                                itemCount:
+                                    state.data.forecast!.forecastday!.length,
+                                scrollDirection: Axis.horizontal,
+                                itemBuilder: (context, index) {
+                                  return Padding(
+                                    padding: EdgeInsets.only(right: 16.0),
+                                    child: Column(
+                                      children: [
+                                        Text(
+                                            "${state.data.forecast!.forecastday![index].day!.avgtempC}"),
+                                        SizedBox(height: 8),
+                                        Icon(Icons.cloud_done),
+                                        SizedBox(height: 8),
+                                        Text(
+                                            "${state.data.forecast!.forecastday![index].day!.condition!.text}"),
+                                        SizedBox(height: 8),
+                                      ],
+                                    ),
+                                  );
+                                },
                               ),
-                            );
-                          },
+                            )
+                          ],
                         ),
-                      )
-                    ],
-                  ),
-                ),
+                      ),
+                    );
+                  }
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                },
               ),
               const SizedBox(height: 32),
               const Row(
@@ -117,9 +156,9 @@ class _MyHomePageState extends State<MyHomePage> {
                           decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(16)),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: const Row(
+                          child: const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Row(
                               children: [
                                 Column(
                                   children: [Text('Today'), Text('Clear')],
@@ -132,7 +171,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                           ),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                       ],
                     );
                   })

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:weather_app/infrostructure/dto/models/future_weather_model.dart';
@@ -19,6 +21,7 @@ class FutureWeatherBloc extends Bloc<FutureWeatherEvent, FutureWeatherState> {
     emit(FutureWeatherLoadingState());
     final data = await repository.getFutureWeather();
     data.fold((l) {
+      log('line 24 ${l.message}');
       emit(FutureWeatherLoadingErrorState(l.message));
     }, (r) {
       emit(FutureWeatherLoadedState(r));
