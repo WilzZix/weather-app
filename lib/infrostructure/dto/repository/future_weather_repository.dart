@@ -11,7 +11,7 @@ class FeatureWeatherRepository extends IFutureWeatherRepository {
   Future<Either<Failure, FutureWeather>> getFutureWeather() async {
     try {
       final response = await NetworkProvider.dio
-          .get('https://api.weatherapi.com/v1/forecast.json?q=10001&days=1');
+          .get('https://api.weatherapi.com/v1/forecast.json?q=10001&days=14');
       return Right(FutureWeather.fromJson(response.data));
     } catch (e) {
       log('line 17 ${e.toString()}');

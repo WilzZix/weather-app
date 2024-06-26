@@ -98,22 +98,22 @@ class _MyHomePageState extends State<MyHomePage> {
                             SizedBox(
                               height: 90,
                               child: ListView.builder(
-                                itemCount:
-                                    state.data.forecast!.forecastday!.length,
+                                itemCount: state.data.forecast!.forecastday!
+                                    .first.hour!.length,
                                 scrollDirection: Axis.horizontal,
                                 itemBuilder: (context, index) {
                                   return Padding(
-                                    padding: EdgeInsets.only(right: 16.0),
+                                    padding: const EdgeInsets.only(right: 16.0),
                                     child: Column(
                                       children: [
                                         Text(
-                                            "${state.data.forecast!.forecastday![index].day!.avgtempC}"),
-                                        SizedBox(height: 8),
-                                        Icon(Icons.cloud_done),
-                                        SizedBox(height: 8),
+                                            "${state.data.forecast!.forecastday!.first.hour![index].tempC!}"),
+                                        const SizedBox(height: 8),
+                                        const Icon(Icons.cloud_done),
+                                        const SizedBox(height: 8),
                                         Text(
-                                            "${state.data.forecast!.forecastday![index].day!.condition!.text}"),
-                                        SizedBox(height: 8),
+                                            "${state.data.forecast!.forecastday!.first.hour![index].condition!.text}"),
+                                        const SizedBox(height: 8),
                                       ],
                                     ),
                                   );
@@ -135,7 +135,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '10 days forecast',
+                    '14 days forecast',
                     style: TextStyle(fontSize: 24),
                   ),
                   Text(
@@ -145,36 +145,49 @@ class _MyHomePageState extends State<MyHomePage> {
                 ],
               ),
               const SizedBox(height: 16),
-              ListView.builder(
-                  itemCount: 15,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    return Column(
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16)),
-                          child: const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Row(
-                              children: [
-                                Column(
-                                  children: [Text('Today'), Text('Clear')],
+              BlocBuilder<FutureWeatherBloc, FutureWeatherState>(
+                builder: (context, state) {
+                  if (state is FutureWeatherLoadedState) {
+                    return ListView.builder(
+                        itemCount: state.data.forecast!.forecastday!.length,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          return Column(
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16)),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Row(
+                                    children: [
+                                      Column(
+                                        children: [
+                                          Text(
+                                              '${state.data.forecast!.forecastday![index].date}'),
+                                          Text(
+                                              '${state.data.forecast!.forecastday![index].day!.condition!.text}')
+                                        ],
+                                      ),
+                                      const Spacer(),
+                                      const Icon(Icons.cloud_done),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                          '${state.data.forecast!.forecastday![index].day!.maxtempC}/${state.data.forecast!.forecastday![index].day!.mintempC}'),
+                                    ],
+                                  ),
                                 ),
-                                Spacer(),
-                                Icon(Icons.cloud_done),
-                                SizedBox(width: 8),
-                                Text('+20/+10'),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                      ],
-                    );
-                  })
+                              ),
+                              const SizedBox(height: 8),
+                            ],
+                          );
+                        });
+                  }
+                  return const CircularProgressIndicator();
+                },
+              )
             ],
           ),
         ),
