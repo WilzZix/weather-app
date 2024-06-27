@@ -31,7 +31,8 @@ class _MyHomePageState extends State<MyHomePage> {
             builder: (context, state) {
               if (state is FutureWeatherLoadedState) {
                 return Text(
-                    "${state.data.location!.name!},${state.data.location!.country!}");
+                  "${state.data.location!.name!},${state.data.location!.country!}",
+                );
               }
               return const CircularProgressIndicator();
             },
