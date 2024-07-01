@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:weather_app/application/future_weather/future_weather_bloc.dart';
+import 'package:weather_app/utils/typography/Typogriphy.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -16,28 +18,67 @@ class _MyHomePageState extends State<MyHomePage> {
     BlocProvider.of<FutureWeatherBloc>(context).add(GetFutureWeatherEvent());
   }
 
+  TextEditingController searchPlaceController = TextEditingController();
+  bool showSearchBar = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white70,
+      backgroundColor: Colors.white.withOpacity(.8),
       appBar: AppBar(
         backgroundColor: Colors.white70,
         leading: const Icon(Icons.menu),
         actions: [
-          BlocBuilder<FutureWeatherBloc, FutureWeatherState>(
-            buildWhen: (context, state) {
-              return state is FutureWeatherLoadedState;
+          showSearchBar
+              ? Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.60,
+                    child: TextFormField(
+                      controller: searchPlaceController,
+                      decoration: InputDecoration(
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(9),
+                          borderSide:
+                              const BorderSide(color: Colors.black, width: 1),
+                        ),
+                        disabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(9),
+                          borderSide:
+                              const BorderSide(color: Colors.black, width: 1),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(9),
+                          borderSide:
+                              const BorderSide(color: Colors.black, width: 1),
+                        ),
+                        hintText: 'Search place',
+                      ),
+                    ),
+                  ),
+                )
+              : BlocBuilder<FutureWeatherBloc, FutureWeatherState>(
+                  buildWhen: (context, state) {
+                    return state is FutureWeatherLoadedState;
+                  },
+                  builder: (context, state) {
+                    if (state is FutureWeatherLoadedState) {
+                      return Text(
+                        "${state.data.location!.name!},${state.data.location!.country!}",
+                        style: Typographies.cityNameStyle,
+                      );
+                    }
+                    return const CircularProgressIndicator();
+                  },
+                ),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: () {
+              showSearchBar = !showSearchBar;
+              setState(() {});
             },
-            builder: (context, state) {
-              if (state is FutureWeatherLoadedState) {
-                return Text(
-                  "${state.data.location!.name!},${state.data.location!.country!}",
-                );
-              }
-              return const CircularProgressIndicator();
-            },
-          ),
-          const Icon(Icons.keyboard_arrow_down)
+            child: Icon(showSearchBar ? Icons.close : Icons.search),
+          )
         ],
       ),
       body: SingleChildScrollView(
@@ -65,10 +106,30 @@ class _MyHomePageState extends State<MyHomePage> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  "${state.data.current!.tempC}",
-                                  style: const TextStyle(
-                                      fontSize: 46, color: Colors.blue),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "${state.data.current!.tempC!.ceil()}",
+                                      style: const TextStyle(
+                                          fontSize: 46, color: Colors.blue),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 16.0),
+                                      child: Container(
+                                        height: 12,
+                                        width: 12,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            width: 3,
+                                            color: Colors.blueAccent,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  ],
                                 ),
                                 const Icon(Icons.cloud_done)
                               ],
@@ -80,9 +141,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(state.data.current!.condition!.text!),
                                     Text(
-                                        'Feels like ${state.data.current!.feelslikeC}'),
+                                      state.data.current!.condition!.text!,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                        'Feels like ${state.data.current!.feelslikeC!.ceil()}'),
                                   ],
                                 ),
                                 //  Text('Max 20, Min 10')
@@ -108,12 +173,23 @@ class _MyHomePageState extends State<MyHomePage> {
                                     child: Column(
                                       children: [
                                         Text(
-                                            "${state.data.forecast!.forecastday!.first.hour![index].tempC!}"),
+                                          "+${state.data.forecast!.forecastday!.first.hour![index].tempC!.ceil()}",
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                         const SizedBox(height: 8),
                                         const Icon(Icons.cloud_done),
                                         const SizedBox(height: 8),
-                                        Text(
-                                            "${state.data.forecast!.forecastday!.first.hour![index].condition!.text}"),
+                                        Text(DateFormat('HH:mm').format(
+                                            DateFormat("yyyy-MM-dd HH:mm")
+                                                .parse(state
+                                                    .data
+                                                    .forecast!
+                                                    .forecastday!
+                                                    .first
+                                                    .hour![index]
+                                                    .time!))),
                                         const SizedBox(height: 8),
                                       ],
                                     ),
@@ -161,13 +237,23 @@ class _MyHomePageState extends State<MyHomePage> {
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(16)),
                                 child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
+                                  padding: const EdgeInsets.all(16.0),
                                   child: Row(
                                     children: [
                                       Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                              '${state.data.forecast!.forecastday![index].date}'),
+                                              DateFormat('MMMM dd').format(
+                                                  DateFormat("yyyy-MM-dd")
+                                                      .parse(state
+                                                          .data
+                                                          .forecast!
+                                                          .forecastday![index]
+                                                          .date!)),
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold)),
                                           Text(
                                               '${state.data.forecast!.forecastday![index].day!.condition!.text}')
                                         ],
@@ -176,7 +262,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       const Icon(Icons.cloud_done),
                                       const SizedBox(width: 8),
                                       Text(
-                                          '${state.data.forecast!.forecastday![index].day!.maxtempC}/${state.data.forecast!.forecastday![index].day!.mintempC}'),
+                                          '+${state.data.forecast!.forecastday![index].day!.maxtempC!.ceil()}/+${state.data.forecast!.forecastday![index].day!.mintempC!.ceil()}'),
                                     ],
                                   ),
                                 ),

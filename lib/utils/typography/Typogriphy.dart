@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class Typography {
-  const Typography._();
+class Typographies {
+  const Typographies._();
 
-  static const cityNameStyle = TextStyle();
+  static const cityNameStyle = TextStyle(fontSize: 20);
 }
