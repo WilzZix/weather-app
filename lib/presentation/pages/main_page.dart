@@ -183,7 +183,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                             fontWeight: FontWeight.bold),
                                       ),
                                       Text(
-                                          'Feels like ${state.data.current!.feelslikeC!.ceil()}'),
+                                          '${l10n!.feelsLike} ${state.data.current!.feelslikeC!.ceil()}'),
                                     ],
                                   ),
                                   //  Text('Max 20, Min 10')

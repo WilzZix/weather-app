@@ -1,4 +1,5 @@
 {
   "@@locale": "en",
-  "appFile": "hello World"
+  "appFile": "hello World",
+  "feelsLike": "Feels like"
 }
