@@ -1,19 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:weather_app/application/future_weather/future_weather_bloc.dart';
+import 'package:weather_app/application/theme_mode_changing/theme__bloc.dart';
 import 'package:weather_app/presentation/pages/main_page.dart';
 
 void main() {
   BlocOverrides.runZoned(
     () => runApp(
-      const MyApp(),
+      MyApp(),
     ),
     blocObserver: AppBlocObserver(),
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  ThemeMode themeMode = ThemeMode.system;
 
   @override
   Widget build(BuildContext context) {
@@ -22,14 +30,28 @@ class MyApp extends StatelessWidget {
         BlocProvider(
           create: (context) => FutureWeatherBloc(),
         ),
+        BlocProvider(create: (context) => ThemeBloc())
       ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Flutter Weather App',
-        theme: ThemeData(
-          useMaterial3: true,
-        ),
-        home: const MyHomePage(),
+      child: BlocBuilder<ThemeBloc, ThemeState>(
+        builder: (context, state) {
+          if (state is AppThemeChanged) {
+            themeMode = state.isDarkMode ? ThemeMode.dark : ThemeMode.light;
+          }
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            themeMode: themeMode,
+            title: 'Flutter Weather App',
+            theme: ThemeData(
+                useMaterial3: true,
+                colorSchemeSeed: const Color.fromRGBO(86, 80, 14, 171)),
+            darkTheme: ThemeData(
+              useMaterial3: true,
+              brightness: Brightness.dark,
+              colorSchemeSeed: const Color.fromRGBO(86, 80, 14, 171),
+            ),
+            home: const MyHomePage(),
+          );
+        },
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:weather_app/application/future_weather/future_weather_bloc.dart';
+import 'package:weather_app/application/theme_mode_changing/theme__bloc.dart';
 import 'package:weather_app/utils/typography/Typogriphy.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -20,6 +21,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   TextEditingController searchPlaceController = TextEditingController();
   bool showSearchBar = false;
+  bool isDarkMode = false;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +30,13 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white.withOpacity(.8),
-        leading: const Icon(Icons.menu),
+        leading: GestureDetector(
+          onTap: () {
+            isDarkMode = !isDarkMode;
+            BlocProvider.of<ThemeBloc>(context).add(ChangeAppTheme(isDarkMode));
+          },
+          child: Icon(Icons.menu),
+        ),
         actions: [
           showSearchBar
               ? Padding(
