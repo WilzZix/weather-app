@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:weather_app/application/future_weather/future_weather_bloc.dart';
+import 'package:weather_app/application/locale_change/change_local_bloc.dart';
 import 'package:weather_app/application/theme_mode_changing/theme__bloc.dart';
+import 'package:weather_app/extansion/extantions.dart';
 import 'package:weather_app/presentation/pages/main_page.dart';
 
 void main() {
   BlocOverrides.runZoned(
     () => runApp(
-      MyApp(),
+      const MyApp(),
     ),
     blocObserver: AppBlocObserver(),
   );
@@ -22,6 +24,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   ThemeMode themeMode = ThemeMode.system;
+  Locale locale = const Locale('en');
 
   @override
   Widget build(BuildContext context) {
@@ -30,26 +33,42 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(
           create: (context) => FutureWeatherBloc(),
         ),
-        BlocProvider(create: (context) => ThemeBloc())
+        BlocProvider(create: (context) => ThemeBloc()),
+        BlocProvider(create: (context) => ChangeLocalBloc())
       ],
       child: BlocBuilder<ThemeBloc, ThemeState>(
         builder: (context, state) {
           if (state is AppThemeChanged) {
             themeMode = state.isDarkMode ? ThemeMode.dark : ThemeMode.light;
           }
-          return MaterialApp(
-            debugShowCheckedModeBanner: false,
-            themeMode: themeMode,
-            title: 'Flutter Weather App',
-            theme: ThemeData(
+          return BlocListener<ChangeLocalBloc, ChangeLocalState>(
+            listener: (context, state) {
+              if (state is LocalChanged) {
+                locale = state.local == 'ru'
+                    ? const Locale('ru')
+                    : const Locale('en');
+
+                setState(() {});
+              }
+            },
+            child: MaterialApp(
+              locale: locale,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              debugShowCheckedModeBanner: false,
+              themeMode: themeMode,
+              title: 'Flutter Weather App',
+              theme: ThemeData(
                 useMaterial3: true,
-                colorSchemeSeed: const Color.fromRGBO(86, 80, 14, 171)),
-            darkTheme: ThemeData(
-              useMaterial3: true,
-              brightness: Brightness.dark,
-              colorSchemeSeed: const Color.fromRGBO(86, 80, 14, 171),
+                colorSchemeSeed: const Color.fromRGBO(86, 80, 14, 171),
+              ),
+              darkTheme: ThemeData(
+                useMaterial3: true,
+                brightness: Brightness.dark,
+                colorSchemeSeed: const Color.fromRGBO(86, 80, 14, 171),
+              ),
+              home: const MyHomePage(),
             ),
-            home: const MyHomePage(),
           );
         },
       ),

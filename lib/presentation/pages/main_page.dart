@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:weather_app/application/future_weather/future_weather_bloc.dart';
+import 'package:weather_app/application/locale_change/change_local_bloc.dart';
 import 'package:weather_app/application/theme_mode_changing/theme__bloc.dart';
+import 'package:weather_app/extansion/extantions.dart';
 import 'package:weather_app/utils/typography/Typogriphy.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -22,20 +24,35 @@ class _MyHomePageState extends State<MyHomePage> {
   TextEditingController searchPlaceController = TextEditingController();
   bool showSearchBar = false;
   bool isDarkMode = false;
+  bool engLocalChecked = true;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       backgroundColor: Colors.white.withOpacity(.8),
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white.withOpacity(.8),
-        leading: GestureDetector(
-          onTap: () {
-            isDarkMode = !isDarkMode;
-            BlocProvider.of<ThemeBloc>(context).add(ChangeAppTheme(isDarkMode));
-          },
-          child: Icon(Icons.menu),
+        leading: Row(
+          children: [
+            GestureDetector(
+              onTap: () {
+                isDarkMode = !isDarkMode;
+                BlocProvider.of<ThemeBloc>(context)
+                    .add(ChangeAppTheme(isDarkMode));
+              },
+              child: const Icon(Icons.menu),
+            ),
+            GestureDetector(
+              onTap: () {
+                engLocalChecked = !engLocalChecked;
+                BlocProvider.of<ChangeLocalBloc>(context)
+                    .add(ChangeLocal(engLocalChecked ? 'en' : 'ru'));
+              },
+              child: const Icon(Icons.language),
+            )
+          ],
         ),
         actions: [
           showSearchBar
@@ -228,12 +245,12 @@ class _MyHomePageState extends State<MyHomePage> {
                   },
                 ),
                 const SizedBox(height: 32),
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '14 days forecast',
-                      style: TextStyle(fontSize: 24),
+                      l10n!.appFile,
+                      style: const TextStyle(fontSize: 24),
                     ),
                   ],
                 ),
